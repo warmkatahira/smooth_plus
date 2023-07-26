@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+// +-+-+-+-+-+-+-+- Welcome +-+-+-+-+-+-+-+-
+use App\Http\Controllers\Welcome\WelcomeController;
+// +-+-+-+-+-+-+-+- TOP +-+-+-+-+-+-+-+-
+use App\Http\Controllers\Top\TopController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,8 +18,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+// ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆ Welcome ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
+    // -+-+-+-+-+-+-+-+-+-+-+-+ Welcome -+-+-+-+-+-+-+-+-+-+-+-+
+    Route::controller(WelcomeController::class)->prefix('')->name('welcome.')->group(function(){
+        Route::get('', 'index')->name('index');
+    });
+
+// ログインとステータスチェック
+Route::middleware(['auth'])->group(function () {
+    // ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆ Top ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
+        // -+-+-+-+-+-+-+-+-+-+-+-+ TOP -+-+-+-+-+-+-+-+-+-+-+-+
+        Route::controller(TopController::class)->prefix('top')->name('top.')->group(function(){
+            Route::get('', 'index')->name('index');
+        });
 });
 
 Route::get('/dashboard', function () {

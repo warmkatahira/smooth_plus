@@ -17,10 +17,21 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    // 主キーカラムを変更
+    protected $primaryKey = 'user_no';
+    // 操作可能なカラムを定義
     protected $fillable = [
-        'name',
+        'user_id',
+        'last_name',
+        'first_name',
         'email',
         'password',
+        'role_id',
+        'status',
+        'order_pagination',
+        'item_pagination',
+        'chatwork_account_id',
+        'last_login_at',
     ];
 
     /**

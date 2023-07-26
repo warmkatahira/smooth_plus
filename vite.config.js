@@ -12,6 +12,10 @@ export default defineConfig({
             'resources/css/app.css',
 			'resources/js/app.js',
             'resources/scss/theme.scss',
+            'resources/css/welcome.css',
+            'resources/scss/navigation.scss',
+            'resources/js/loading.js',
+            'resources/css/loading.css',
         ]),
     ],
 });

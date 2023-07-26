@@ -29,6 +29,18 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     </head>
     <body>
-        
+        <!-- アラート表示 -->
+        <x-alert/>
+        <div class="flex mt-3">
+            @auth
+                <a href="{{ route('top.index') }}" class="ml-auto mr-10"><img src="{{ asset('image/home_button.svg') }}" class="w-32"></a>
+            @else
+                <a href="{{ route('login') }}" class="ml-auto"><img src="{{ asset('image/login_button.svg') }}" class="w-32"></a>
+                <a href="{{ route('register') }}" class="ml-10 mr-10"><img src="{{ asset('image/register_button.svg') }}" class="w-32"></a>
+            @endauth
+        </div>
+        <div class="text-center">
+            <img src="{{ asset('image/smooth_plus_logo.svg') }}" class="welcome_logo">
+        </div>
     </body>
 </html>

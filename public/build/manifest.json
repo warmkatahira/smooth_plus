@@ -1,13 +1,33 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-1edcf023.css",
+    "file": "assets/app-8ea17046.css",
     "isEntry": true,
     "src": "resources/css/app.css"
+  },
+  "resources/css/loading.css": {
+    "file": "assets/loading-88a429d8.css",
+    "isEntry": true,
+    "src": "resources/css/loading.css"
+  },
+  "resources/css/welcome.css": {
+    "file": "assets/welcome-bac3829e.css",
+    "isEntry": true,
+    "src": "resources/css/welcome.css"
   },
   "resources/js/app.js": {
     "file": "assets/app-4a08c204.js",
     "isEntry": true,
     "src": "resources/js/app.js"
+  },
+  "resources/js/loading.js": {
+    "file": "assets/loading-4ed993c7.js",
+    "isEntry": true,
+    "src": "resources/js/loading.js"
+  },
+  "resources/scss/navigation.scss": {
+    "file": "assets/navigation-c92a6976.css",
+    "isEntry": true,
+    "src": "resources/scss/navigation.scss"
   },
   "resources/scss/theme.scss": {
     "file": "assets/theme-04fe3874.css",
