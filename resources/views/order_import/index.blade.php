@@ -19,7 +19,7 @@
             <table class="text-sm whitespace-nowrap">
                 <thead>
                     <tr class="text-left text-white bg-gray-600">
-                        <th class="font-thin py-1 px-2"><i class="las la-check-square la-lg"></i></th>
+                        <th class="font-thin py-1 px-2">選択</th>
                         <th class="font-thin py-1 px-2">設定名</th>
                         <th class="font-thin py-1 px-2">ショップ</th>
                         <th class="font-thin py-1 px-2">データ拡張子</th>
@@ -30,7 +30,7 @@
                 <tbody class="bg-white">
                     @foreach($order_import_settings as $order_import_setting)
                         <tr class="text-left hover:bg-theme-sub cursor-default">
-                            <td class="py-1 px-2 border">
+                            <td class="py-1 px-2 border text-center">
                                 <input type="radio" name="order_import_setting_id" value="{{ $order_import_setting->order_import_setting_id }}">
                             </td>
                             <td class="py-1 px-2 border">{{ $order_import_setting->order_import_setting_name }}</td>
