@@ -1,5 +1,3 @@
 <x-app-layout>
-    <div class="my-5">
-        TOP
-    </div>
+    TOP
 </x-app-layout>

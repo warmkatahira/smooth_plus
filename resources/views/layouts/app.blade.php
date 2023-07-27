@@ -17,7 +17,7 @@
         @vite(['resources/css/app.css', 'resources/scss/theme.scss'])
 
         <!-- Scripts -->
-        @vite(['resources/js/app.js'])
+        @vite(['resources/js/app.js', 'resources/js/file_select.js'])
 
         <!-- LINE AWESOME -->
         <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
@@ -39,7 +39,7 @@
             <!-- ローディング -->
             <x-loading />
             <!-- ページコンテンツ -->
-            <main class="mx-3">
+            <main class="m-3">
                 {{ $slot }}
             </main>
         </div>
