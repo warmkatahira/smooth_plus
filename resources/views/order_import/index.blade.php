@@ -2,6 +2,9 @@
 
 <x-app-layout>
     <x-page-header content="受注インポート" />
+    <!-- バリデーションエラー -->
+    <x-validation-error-msg />
+    <!-- 受注データインポートフォーム -->
     <form method="POST" action="{{ route('order_import.import') }}" id="order_import_form" enctype="multipart/form-data" class="ml-5">
         @csrf
         <p class="border-l-4 border-theme-main pl-2 mb-2">受注データ選択</p>
@@ -10,7 +13,7 @@
                 <p class="text-sm whitespace-nowrap select_file_name pl-5 py-1.5 bg-white overflow-hidden" style="width: 500px"></p>
                 <label class="text-sm whitespace-nowrap bg-gray-600 text-white inline-block text-center px-10 py-1.5 hover:cursor-pointer">
                     <i class="las la-file-alt la-lg"></i>データ選択
-                    <input type="file" id="select_file" name="csvFile_order" class="hidden">
+                    <input type="file" id="select_file" name="order_data" class="hidden">
                 </label>
             </div>
         </div>
