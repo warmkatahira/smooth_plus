@@ -45,10 +45,49 @@ class OrderImportSetting extends Model
         'unit_price',
         'order_quantity',
     ];
+    // 
+    public static function getSettingParameter()
+    {
+        return [
+            'order_no',
+            'order_date',
+            'order_time',
+            'buyer_name',
+            'buyer_zip_code',
+            'buyer_address',
+            'buyer_tel',
+            'ship_name',
+            'ship_zip_code',
+            'ship_address',
+            'ship_tel',
+            'desired_delivery_date',
+            'desired_delivery_time',
+            'shipping_method',
+            'payment_method',
+            'shipping_fee',
+            'other_fee',
+            'sales_tax',
+            'point_discount',
+            'coupon_discount',
+            'other_discount',
+            'total_amount',
+            'billing_amount',
+            'buyer_memo',
+            'order_item_code',
+            'order_item_name',
+            'unit_price',
+            'order_quantity',
+        ];
+    }
     // 全て取得
     public static function getAll()
     {
         return self::orderBy('order_import_setting_id', 'asc');
+    }
+    // 指定したレコードを取得
+    public static function getSpecify($order_import_setting_id)
+    {
+        return self::where('order_import_setting_id', $order_import_setting_id);
     }
     // shopsテーブルとのリレーション
     public function shop()

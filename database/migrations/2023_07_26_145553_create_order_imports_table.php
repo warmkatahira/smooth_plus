@@ -20,11 +20,11 @@ return new class extends Migration
             $table->unsignedInteger('order_status_id');
             $table->unsignedInteger('shop_id');
             $table->unsignedInteger('shipping_method_id')->nullable();
-            // ここから受注データで取り込む項目
+            // ここから受注データの項目
             $table->string('order_no', 50);
-            $table->date('order_date');
-            $table->time('order_time');
-            $table->string('buyer_name', 50);
+            $table->date('order_date')->nullable();
+            $table->time('order_time')->nullable();
+            $table->string('buyer_name', 50)->nullable();
             $table->string('buyer_zip_code', 8)->nullable();
             $table->string('buyer_address')->nullable();
             $table->string('buyer_tel', 13)->nullable();
@@ -46,7 +46,7 @@ return new class extends Migration
             $table->integer('billing_amount')->default(0);
             $table->text('buyer_memo')->nullable();
             $table->string('order_item_code', 50);
-            $table->string('order_item_name');
+            $table->string('order_item_name')->nullable();
             $table->unsignedInteger('unit_price')->nullable();
             $table->unsignedInteger('order_quantity');
             $table->timestamps();
