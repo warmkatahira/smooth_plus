@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedInteger('buyer_zip_code')->nullable();
             $table->unsignedInteger('buyer_address')->nullable();
             $table->unsignedInteger('buyer_tel')->nullable();
-            $table->unsignedInteger('ship_name');
+            $table->string('ship_name');
             $table->unsignedInteger('ship_zip_code');
             $table->unsignedInteger('ship_address');
             $table->unsignedInteger('ship_tel');

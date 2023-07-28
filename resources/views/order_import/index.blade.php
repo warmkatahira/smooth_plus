@@ -48,4 +48,72 @@
         </div>
         <button type="button" id="order_import_enter" class="border border-theme-main bg-theme-sub hover:bg-theme-main text-center py-3 px-28 mt-5">取込開始</button>
     </form>
+    <table class="ml-5 text-xs whitespace-nowrap">
+        <thead>
+            <tr class="text-left text-white bg-gray-600">
+                <th class="font-thin py-1 px-2">受注番号</th>
+                <th class="font-thin py-1 px-2">注文日</th>
+                <th class="font-thin py-1 px-2">注文時間</th>
+                <th class="font-thin py-1 px-2">購入者名</th>
+                <th class="font-thin py-1 px-2">購入者郵便番号</th>
+                <th class="font-thin py-1 px-2">購入者住所</th>
+                <th class="font-thin py-1 px-2">購入者電話番号</th>
+                <th class="font-thin py-1 px-2">配送先名</th>
+                <th class="font-thin py-1 px-2">配送先郵便番号</th>
+                <th class="font-thin py-1 px-2">配送先住所</th>
+                <th class="font-thin py-1 px-2">配送先電話番号</th>
+                <th class="font-thin py-1 px-2">配送希望日</th>
+                <th class="font-thin py-1 px-2">配送希望時間</th>
+                <th class="font-thin py-1 px-2">配送方法</th>
+                <th class="font-thin py-1 px-2">支払方法</th>
+                <th class="font-thin py-1 px-2">送料</th>
+                <th class="font-thin py-1 px-2">その他費用</th>
+                <th class="font-thin py-1 px-2">消費税</th>
+                <th class="font-thin py-1 px-2">ポイント値引き</th>
+                <th class="font-thin py-1 px-2">クーポン値引き</th>
+                <th class="font-thin py-1 px-2">その他値引き</th>
+                <th class="font-thin py-1 px-2">合計金額</th>
+                <th class="font-thin py-1 px-2">請求金額</th>
+                <th class="font-thin py-1 px-2">購入者メモ</th>
+                <th class="font-thin py-1 px-2">商品コード</th>
+                <th class="font-thin py-1 px-2">商品名</th>
+                <th class="font-thin py-1 px-2">単価</th>
+                <th class="font-thin py-1 px-2">購入数</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white">
+            @foreach($order_imports as $order_import)
+                <tr class="text-left hover:bg-theme-sub cursor-default">
+                    <td class="py-1 px-2 border">{{ $order_import->order_no }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->order_date }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->order_time }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->buyer_name }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->buyer_zip_code }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->buyer_address }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->buyer_tel }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->ship_name }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->ship_zip_code }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->ship_address }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->ship_tel }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->desired_delivery_date }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->desired_delivery_time }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->shipping_method }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->payment_method }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->shipping_fee }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->other_fee }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->sales_tax }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->point_discount }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->coupon_discount }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->other_discount }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->total_amount }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->billing_amount }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->buyer_memo }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->order_item_code }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->order_item_name }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->unit_price }}</td>
+                    <td class="py-1 px-2 border">{{ $order_import->order_quantity }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 </x-app-layout>

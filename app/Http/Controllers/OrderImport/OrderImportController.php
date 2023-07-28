@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 // モデル
 use App\Models\OrderImportSetting;
+use App\Models\OrderImport;
 // リクエスト
 use App\Http\Requests\OrderImport\OrderImportRequest;
 // サービス
@@ -19,8 +20,13 @@ class OrderImportController extends Controller
     {
         // 受注インポート設定を全て取得
         $order_import_settings = OrderImportSetting::getAll()->get();
+
+
+        $order_imports = OrderImport::all();
+
         return view('order_import.index')->with([
             'order_import_settings' => $order_import_settings,
+            'order_imports' => $order_imports,
         ]);
     }
 
@@ -34,6 +40,12 @@ class OrderImportController extends Controller
         $order_import_setting = OrderImportSetting::getSpecify($request->order_import_setting_id)->first();
         // 受注データをストレージに保存し、フルパスを取得
         $path = $OrderImportService->importOrderData($request->file('order_data'), 'import_order_data.csv');
+        // 受注インポート設定のカラム位置が受注データに存在しているかチェック
+        $error = $OrderImportService->checkOrderDataColumn($order_import_setting, $path);
+        // trueであれば、エラーを返す
+        if($error){
+            throw new \Exception("受注データの列数不正により、インポートできませんでした。");
+        }
         // 追加する受注データを配列に格納（同時にバリデーションも実施）
         $result = $OrderImportService->setArrayOrderData($order_import_setting, $path, $nowDate);
         // バリデーションエラー配列の中にnull以外があれば、エラー情報を出力
@@ -44,6 +56,9 @@ class OrderImportController extends Controller
         }
         // order_importsテーブルへ追加
         $OrderImportService->insertTableOrderData($result['insert_data']);
-        dd($result);
+        return redirect()->back()->with([
+            'alert_type' => 'success',
+            'alert_message' => '受注インポートが完了しました。',
+        ]);
     }
 }

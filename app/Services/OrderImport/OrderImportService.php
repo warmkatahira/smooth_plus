@@ -23,6 +23,34 @@ class OrderImportService
         return $spath.$file->storeAs('public/import/order', $import_file_name);
     }
 
+    // 受注インポート設定のカラム位置が受注データに存在しているかチェック
+    public function checkOrderDataColumn($order_import_setting, $path)
+    {
+        // 受注データの情報を取得
+        $all_line = (new FastExcel)->import($path);
+        // UTF-8形式に変換した1行分のデータを取得
+        $line = mb_convert_encoding($all_line[0], 'UTF-8', 'ASCII, JIS, UTF-8, SJIS-win');
+        // 配列のキーを列位置に変更し、ダミー要素を先頭に追加
+        $line = array_values($line);
+        array_unshift($line, null);
+        // インデックスを1から始めるため、ダミー要素を削除
+        unset($line[0]);
+        // 受注インポートに必要な項目のみを取得
+        $setting_parameters = $order_import_setting->first(OrderImportSetting::getSettingParameter())->toArray();
+        // 値がnullの要素を削除
+        $setting_parameters = array_filter($setting_parameters, function ($value) {
+            return !is_null($value);
+        });
+        // 設定値の分だけループ
+        foreach($setting_parameters as $key => $value){
+            // キーが存在しなかったらtrueを返す
+            if(!isset($line[$value])){
+                return true;
+            }
+        }
+        return;
+    }
+
     // 
     public function setArrayOrderData($order_import_setting, $path, $nowDate)
     {
