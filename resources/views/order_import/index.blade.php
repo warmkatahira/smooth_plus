@@ -116,4 +116,10 @@
             @endforeach
         </tbody>
     </table>
+    <div class="flex mt-5 ml-5">
+        <!-- インポートエラー表示 -->
+        @if(session('order_import_error'))
+            <x-order-import.error title="インポートエラー" downloadRoute="order_import.error_download" :procDate="session('order_import_error')[0]['インポート日時']"/>
+        @endif
+    </div>
 </x-app-layout>

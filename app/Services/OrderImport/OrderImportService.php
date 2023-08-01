@@ -5,12 +5,15 @@ namespace App\Services\OrderImport;
 // モデル
 use App\Models\OrderImportSetting;
 use App\Models\OrderImport;
+use App\Models\Order;
+use App\Models\OrderDetail;
 // 列挙
 use App\Enums\OrderStatusEnum;
 // その他
 use Carbon\CarbonImmutable;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class OrderImportService
 {
@@ -63,6 +66,8 @@ class OrderImportService
         $validation_error_header = array('エラー行数', 'エラー内容');
         // 取得したレコードの分だけループ
         foreach($all_line as $line_no => $line){
+            // テーブルに追加する配列をセット
+            $param = array_fill_keys(OrderImportSetting::getSettingParameter(), null);
             // UTF-8形式に変換した1行分のデータを取得
             $line = mb_convert_encoding($line, 'UTF-8', 'ASCII, JIS, UTF-8, SJIS-win');
             // 配列のキーを列位置に変更し、ダミー要素を先頭に追加
@@ -70,17 +75,41 @@ class OrderImportService
             array_unshift($line, null);
             // インデックスを1から始めるため、ダミー要素を削除
             unset($line[0]);
-            // データを格納する配列をセット
-            $param = [];
             // 受注インポートに必要な項目のみを取得
-            $setting_parameters = $order_import_setting->first(OrderImportSetting::getSettingParameter())->toArray();
+            $setting_parameters = OrderImportSetting::where('order_import_setting_id', $order_import_setting->order_import_setting_id)->first(OrderImportSetting::getSettingParameter())->toArray();
             // 値がnullの要素を削除
-            $setting_parameters = array_filter($setting_parameters, function ($value) {
-                return !is_null($value);
-            });
+            $setting_parameters = array_filter($setting_parameters, function($value) { return $value !== null; });
             // 設定値の分だけループし、列位置を使用して受注データの情報を配列にセット
-            foreach($setting_parameters as $key => $value){
-                $param[$key] = $line[$value];
+            foreach($setting_parameters as $field_name => $parameter){
+                // カンマでスプリット
+                $parameter_arr = explode(",", $parameter);
+                // 値を格納する配列をセット
+                $value = null;
+                // 設定値の文だけループ
+                foreach($parameter_arr as $key => $item){
+                    // 値を結合して変数へセットしていく
+                    $value .= $line[$item];
+                }
+                // 日付と時間のデータ型については、フォーマット変換をかける
+                try {
+                    // 日付カラムのフォーマット変換をかける
+                    if($field_name == 'order_date' || $field_name == 'desired_delivery_date'){
+                        $value = CarbonImmutable::parse($value)->format('Y-m-d');
+                    }
+                    // 時間カラムのフォーマット変換をかける
+                    if($field_name == 'order_time'){
+                        $value = CarbonImmutable::parse($value)->format('H:i:s');
+                    }
+                } catch (\Exception $e) {
+                    $validation_error[] = array_combine($validation_error_header, [$line_no + 2 . '行目', $parameter . '列目のデータが日付/時間ではありません。']);
+                    return compact('validation_error');
+                }
+                // フィールド名の配列に値をセット
+                $param[$field_name] = $value;
+                // 購入数の場合、未引当数にも同じ値を入れる
+                if($field_name == 'order_quantity'){
+                    $param['unallocated_quantity'] = $value;
+                }
             }
             // 受注データを参照しない値を配列にセット
             $param['shop_id'] = $order_import_setting->shop_id;
@@ -89,6 +118,8 @@ class OrderImportService
             $param['order_import_time'] = $nowDate->toTimeString();
             $param['order_status_id'] = OrderStatusEnum::KAKUNIN_MACHI;
             $param['shipping_method_id'] = 1;
+            // 値がnullの要素を削除
+            $param = array_filter($param, function($value) { return $value !== null; });
             // バリデーション処理
             $message = $this->validationOrderData($param, $line_no + 2);
             // エラーメッセージがあればバリデーションエラーを配列に格納
@@ -107,13 +138,13 @@ class OrderImportService
         $rules = [
             'order_no' => 'required|max:50',
             'order_date' => 'nullable|date',
-            'order_time' => 'nullable',
+            'order_time' => 'nullable|date_format:H:i:s',
             'buyer_name' => 'nullable|max:50',
-            'buyer_zip_code' => 'nullable|max:8',
+            'buyer_zip_code' => 'nullable|max:10',
             'buyer_address' => 'nullable|max:255',
             'buyer_tel' => 'nullable|max:13',
             'ship_name' => 'required|max:50',
-            'ship_zip_code' => 'required|max:8',
+            'ship_zip_code' => 'required|max:10',
             'ship_address' => 'required|max:255',
             'ship_tel' => 'required|max:13',
             'desired_delivery_date' => 'nullable|date',
@@ -196,147 +227,71 @@ class OrderImportService
         return;
     }
 
-    // order_item_codeを更新
-    public function updateOrderItemCode()
+    public function updateOrderUnit($nowDate)
     {
-        // qoo10_order_importsテーブルのレコード分だけループ処理
-        foreach(Qoo10OrderImport::all() as $order){
-            // 「【」= 含まないかつ、オプションコードがnull以外かつオプション情報に「箱」が無い場合、オプションコード（=JANコード）が商品コードとなる
-            if(strpos($order->option_info, '【') === false && !is_null($order->option_code) && substr_count($order->option_info, '箱') == 0){
-                $order->update([
-                    'order_item_code' => $order->option_code,
-                ]);
-                // 次に進む
-                continue;
+        // 受注管理IDの先頭9桁(先頭固定のSを含む)に使用する文字列をランダムで生成し、既に使用されていないか確認する
+        // 未使用の文字列になるまでループ処理
+        $check = false;
+        while($check == false){
+            // 文字列を生成
+            $order_control_id_head = 'S'.Str::random(8);
+            // LIKE検索で生成した文字列をordersテーブルでカウント
+            $count = Order::where('order_control_id', 'LIKE', '%'.$order_control_id_head.'%')->count();
+            // countが0であれば存在していないので、trueをセット
+            if($count == 0){
+                $check = true;
             }
-            /* // オプションコードがnullかつオプション情報がnullの場合、ItemIdが商品コードとなる（ネイル対策）
-            if(is_null($order_detail->option_code) && is_null($order_detail->item_option_name)){
-                $order_detail->update([
-                    'order_item_code' => $order_detail->item_id,
-                ]);
-                // 次に進む
-                continue;
-            } */
-            // スラッシュをカウント
-            $count = substr_count($order->option_info, '/');
-            // スラッシュが含まれている場合
-            if($count > 0){
-                // スラッシュでスプリット
-                $option_info_arr = explode('/', $order->option_info);
-                // オプション情報に「カラー」が含まれていなければ、オプション情報値の墨括弧内1つで商品コードが完結している
-                // 例）オプション情報=「度数(PWR)/右4箱;度数(PWR)/左4箱」
-                /* if(strpos($order->option_info, 'カラー') === false){
-                    for($i = 0;$i < count($option_info_arr);$i++){
-                        // オプション情報に「ノベルティ」が含まれていたら、次に進む
-                        if(strpos($option_info_arr[$i], 'ノベルティ') !== false){
-                            continue;
-                        }
-                        // 商品コードを取得
-                        $item_code = $this->getBetweenWord($option_info_arr[$i], '【', '】');
-                        // オプション情報を取得
-                        $option_info = $option_info_arr[$i];
-                        // オプション情報に「度数」が含まれていない場合
-                        if(strpos($option_info, '度数') === false){
-                            // セット売りではないので、「1」固定とする
-                            $quantity = 1;
-                        }
-                        // オプション情報に「度数」が含まれている場合
-                        if(strpos($option_info, '度数') !== false){
-                            // 不要な文字列を取り除いて、箱数を取得(この後、購入数にかける)
-                            $option_info = str_replace(array("度数(PWR)/右", "度数(PWR)/左"), "", $option_info);
-                            $quantity = str_replace("箱", "", $option_info);
-                        }
-                        // レコードを複製
-                        $clone = $order->replicate();
-                        // 複製したレコードに商品情報をセット、購入数に箱数をかける
-                        $clone->order_item_code = $item_code;
-                        $clone->option_info = $option_info;
-                        $clone->quantity = $clone->quantity * $quantity;
-                        // 複製したレコードを保存
-                        $clone->save();
-                    }
-                    // clone元のレコードを削除して次に進む
-                    $order->delete();
-                    continue;
-                } */
-                // オプション情報が以下の場合、オプション情報の墨括弧内を2つ繋げて1つの商品コードとなる
-                // 「カラー」= 含む、「【」= 含む 
-                // 例）オプション情報=「カラー:エアリーブラウン【clos1d-aibr】 / 度数(PWR):-0.00【-000】」
-                if(strpos($order->option_info, 'カラー') !== false && strpos($order->option_info, '【') !== false){
-                    for($i = 0;$i < count($option_info_arr);$i++){
-                        // 1つ目の墨括弧の中身を取得
-                        $item_code_1 = $this->getBetweenWord($option_info_arr[$i], '【', '】');
-                        // 2つ目の墨括弧の中身を取得
-                        $i++;
-                        $item_code_2 = $this->getBetweenWord($option_info_arr[$i], '【', '】');
-                        // レコードを複製
-                        $clone = $order->replicate();
-                        // 複製したレコードに商品情報をセット
-                        $clone->order_item_code = $item_code_1.$item_code_2;
-                        // 複製したレコードを保存
-                        $clone->save();
-                    }
-                    // clone元のレコードを削除して次に進む
-                    $order->delete();
-                    continue;
-                }
-            }
+        }
+        // 重複を取り除いた受注番号を取得
+        $order_no_uniques = OrderImport::groupBy('order_no')->get(['order_no']);
+        // 受注管理IDの連番で使用する変数をセット
+        $count = 0;
+        // 受注番号分だけループ
+        foreach($order_no_uniques as $order_no_unique){
+            // インポートした受注の中で、受注ステータスを「確認待ち」に変更する条件のものがあるか
+            $order_status_id = $this->updateOrderStatusIdForKAKUNIN_MACHI($order_no_unique->order_no);
+            // 受注管理IDを採番
+            $count++;
+            $order_control_id = $order_control_id_head . sprintf('%04d', $count);
+            // 受注管理ID・受注ステータスIDを更新
+            OrderImport::where('order_no', $order_no_unique->order_no)->update([
+                'order_control_id' => $order_control_id,
+                'order_status_id' => $order_status_id,
+            ]);
         }
         return;
     }
 
-    // 指定した文字と文字の間を抽出
-    public function getBetweenWord($word, $start, $end)
+    // インポートした受注の中で、受注ステータスを「確認待ち」に変更する条件のものがあるか
+    public function updateOrderStatusIdForKAKUNIN_MACHI($order_no)
     {
-        return mb_substr($word, ($i_tg = (mb_strpos($word, $start) + 1)), (mb_strpos($word, $end)) - $i_tg);
+        // 受注データを取得
+        $order = OrderImport::where('order_no', $order_no)->first();
+        // 以下の条件に該当すれば、受注ステータスを「確認待ち」に変更
+        // 条件1:配送先住所から都道府県が取得できていない
+        preg_match_all('/東京都|北海道|(?:京都|大阪)府|.{6,9}県/', $order->ship_address, $maches);
+        if (!isset($maches[0][0])) {
+            $order_status_id = OrderStatusEnum::KAKUNIN_MACHI;
+        }
+        // 条件2:購入者メモがNot Nullである
+        if (!is_null($order->buyer_memo)) {
+            $order_status_id = OrderStatusEnum::KAKUNIN_MACHI;
+        }
+        return isset($order_status_id) ? $order_status_id : OrderStatusEnum::HIKIATE_MACHI;
     }
 
-    // order_importsテーブルへ追加
-    public function insertOrderImport($nowDate)
+    public function insertOrderTable()
     {
-        // 追加内容を格納する配列をセット
-        $insert_data = [];
-        // qoo10_order_importsテーブルのレコード分だけループ処理
-        foreach(Qoo10OrderImport::all() as $order){
-            // 注文日時をインスタンス化
-            $order_time = new CarbonImmutable($order->order_time);
-            // 追加する内容を配列へ格納
-            $param = [
-                'order_no' => $order->order_no,
-                'order_date' => $order_time->toDateString(),
-                'order_time' => $order_time->toTimeString(),
-                'buyer_name' => $order->buyer_name,
-                'ship_name' => $order->ship_name,
-                'ship_zip_code' => $order->ship_zip_code,
-                'ship_address' => $order->ship_address,
-                'ship_tel' => $order->ship_tel,
-                'desired_delivery_date' => $order->desired_delivery_date,
-                'shipping_method_memo' => $order->shipping_method_memo,
-                'other_discount' => $order->other_discount,
-                'billing_amount' => $order->billing_amount,
-                'last_update_user_no' => $order->last_update_user_no,
-                'order_item_code' => $order->order_item_code,
-                'order_item_name' => $order->item_name,
-                'order_item_option_1' => $order->option_info,
-                'order_item_option_2' => $order->option_code,
-                'unit_price' => $order->unit_price,
-                'order_quantity' => $order->quantity,
-                'unallocated_quantity' => $order->quantity,
-                'estimated_shipping_date' => $order->estimated_shipping_date,
-                // 固定値
-                'shop_id' => 2,
-                'order_import_method' => 'CSV',
-                'order_import_date' => $nowDate->toDateString(),
-                'order_import_time' => $nowDate->toTimeString(),
-                'order_status_id' => OrderStatusEnum::KAKUNIN_MACHI,
-                'shipping_method_id' => 1,
-                // ユーザー情報
-                'last_update_user_no' => Auth::user()->user_no
-            ];
-            $insert_data[] = $param;
-        }
-        // 追加
-        OrderImport::upsert($insert_data, 'order_import_id');
+        // ordersテーブルに追加する情報を取得
+        $insert_order = OrderImport::orderInsertTargetListForOrder(OrderImport::query())->get();
+        // 重複を取り除いた結果を取得
+        $insert_order_unique = collect($insert_order)->unique()->toArray();
+        // ordersテーブルに追加
+        Order::upsert($insert_order_unique, 'order_id');
+        // order_detailsテーブルに追加する情報を取得
+        $insert_order_detail = OrderImport::orderInsertTargetListForOrderDetail(OrderImport::query())->get()->toArray();
+        // order_detailsテーブルに追加
+        OrderDetail::upsert($insert_order_detail, 'order_detail_id');
         return;
     }
 }

@@ -47,6 +47,7 @@ class OrderImport extends Model
         'order_item_name',
         'unit_price',
         'order_quantity',
+        'unallocated_quantity',
     ];
     // ordersテーブルに追加する情報を取得
     public static function orderInsertTargetListForOrder($query)
@@ -93,6 +94,7 @@ class OrderImport extends Model
             'order_item_name',
             'unit_price',
             'order_quantity',
+            'unallocated_quantity',
         ]);
     }
 }

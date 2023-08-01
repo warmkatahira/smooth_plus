@@ -18,9 +18,6 @@ return new class extends Migration
             $table->boolean('is_stock_allocated')->default(0);
             $table->string('order_item_code', 50);
             $table->string('order_item_name');
-            $table->string('order_item_option_1')->nullable();
-            $table->string('order_item_option_2')->nullable();
-            $table->string('order_item_option_3')->nullable();
             $table->unsignedInteger('unit_price')->nullable();
             $table->unsignedInteger('order_quantity');
             $table->unsignedInteger('unallocated_quantity');

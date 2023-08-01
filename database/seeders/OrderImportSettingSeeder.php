@@ -45,5 +45,23 @@ class OrderImportSettingSeeder extends Seeder
             'order_item_name' => 8,
             'order_quantity' => 9,
         ]);
+        OrderImportSetting::create([
+            'order_import_setting_name' => 'C Quest',
+            'shop_id' => 1,
+            'data_extension' => 'CSV',
+            'register_user_no' => 1,
+            'order_no' => 2,
+            'order_date' => 7,
+            'order_time' => 7,
+            'ship_name' => "19",
+            'ship_zip_code' => 24,
+            'ship_address' => 23,
+            'ship_tel' => 22,
+            'shipping_method' => 4,
+            'billing_amount' => 32,
+            'order_item_code' => 40,
+            'order_item_name' => 14,
+            'order_quantity' => 15,
+        ]);
     }
 }

@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
         Route::controller(OrderImportController::class)->prefix('order_import')->name('order_import.')->group(function(){
             Route::get('', 'index')->name('index');
             Route::post('', 'import')->name('import');
+            Route::get('error_download', 'error_download')->name('error_download');
         });
 });
 
