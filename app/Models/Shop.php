@@ -26,4 +26,9 @@ class Shop extends Model
         'shipping_label_4',
         'shipping_label_5',
     ];
+    // mallsテーブルとのリレーション
+    public function mall()
+    {
+        return $this->belongsTo(Mall::class, 'mall_id', 'mall_id');
+    }
 }

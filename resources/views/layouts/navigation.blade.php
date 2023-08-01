@@ -6,7 +6,7 @@
         <li class="dropdown"><a href="#" class="trigger-drop">受注</a>
             <ul class="drop">
                 <li><a href="{{ route('order_import.index') }}">受注インポート</a></li>
-                <li><a href="">受注管理</a></li>
+                <li><a href="{{ route('order_mgt.index') }}">受注管理</a></li>
             </ul>
         </li>
         <li class="dropdown"><a href="#" class="trigger-drop">出荷</a>

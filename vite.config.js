@@ -28,6 +28,10 @@ export default defineConfig({
             [
                 'resources/js/order_import/order_import.js',
             ],
+            // 受注管理
+            [
+                'resources/scss/order_mgt.scss',
+            ],
         ),
     ],
 });

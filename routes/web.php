@@ -8,6 +8,8 @@ use App\Http\Controllers\Welcome\WelcomeController;
 use App\Http\Controllers\Top\TopController;
 // +-+-+-+-+-+-+-+- 受注インポート +-+-+-+-+-+-+-+-
 use App\Http\Controllers\OrderImport\OrderImportController;
+// +-+-+-+-+-+-+-+- 受注管理 +-+-+-+-+-+-+-+-
+use App\Http\Controllers\OrderMgt\OrderMgtController;
 
 // ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆ Welcome ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
     // -+-+-+-+-+-+-+-+-+-+-+-+ Welcome -+-+-+-+-+-+-+-+-+-+-+-+
@@ -28,6 +30,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('', 'index')->name('index');
             Route::post('', 'import')->name('import');
             Route::get('error_download', 'error_download')->name('error_download');
+        });
+    // ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆ 受注管理 ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
+        // -+-+-+-+-+-+-+-+-+-+-+-+ 受注管理 -+-+-+-+-+-+-+-+-+-+-+-+
+        Route::controller(OrderMgtController::class)->prefix('order_mgt')->name('order_mgt.')->group(function(){
+            Route::get('', 'index')->name('index');
         });
 });
 

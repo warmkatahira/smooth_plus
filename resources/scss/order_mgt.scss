@@ -1,0 +1,9 @@
+// 無駄なスクロールバーを非表示
+.order_list_wrap::-webkit-scrollbar{
+    display: none;
+}
+// テーブルの要素サイズ
+.order_list_table_wrap{
+    width: 100%;
+    height: 400px;
+}

@@ -58,4 +58,14 @@ class Order extends Model
         'shipping_group_id',
         'delivery_time_zone',
     ];
+    // 全てを取得
+    public static function getAll()
+    {
+        return self::orderBy('order_id', 'asc');
+    }
+    // shopsテーブルとのリレーション
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class, 'shop_id', 'shop_id');
+    }
 }
