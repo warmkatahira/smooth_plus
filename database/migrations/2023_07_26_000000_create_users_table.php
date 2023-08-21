@@ -23,7 +23,6 @@ return new class extends Migration
             $table->boolean('status')->default(0);
             $table->unsignedInteger('order_pagination')->default(50);
             $table->unsignedInteger('item_pagination')->default(50);
-            $table->string('chatwork_account_id', 10)->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

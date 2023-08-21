@@ -31,7 +31,6 @@ class User extends Authenticatable
         'status',
         'order_pagination',
         'item_pagination',
-        'chatwork_account_id',
         'last_login_at',
     ];
     // 指定したレコードを取得
