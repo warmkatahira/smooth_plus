@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -33,6 +34,11 @@ class User extends Authenticatable
         'chatwork_account_id',
         'last_login_at',
     ];
+    // 指定したレコードを取得
+    public static function getSpecify($user_no)
+    {
+        return self::where('user_no', $user_no);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

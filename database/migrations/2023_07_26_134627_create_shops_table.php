@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('shipping_label_5', 20)->nullable();
             $table->timestamps();
             // 外部キー制約
-            $table->foreign('mall_id')->references('mall_id')->on('malls')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreign('mall_id')->references('mall_id')->on('malls')->cascadeOnDelete();
         });
     }
 
