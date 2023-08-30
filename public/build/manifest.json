@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-2618cf08.css",
+    "file": "assets/app-5a418bee.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -20,7 +20,7 @@
     "src": "resources/js/checkbox.js"
   },
   "resources/js/file_select.js": {
-    "file": "assets/file_select-0146232d.js",
+    "file": "assets/file_select-7ea6b771.js",
     "isEntry": true,
     "src": "resources/js/file_select.js"
   },

@@ -19,13 +19,9 @@ $('#select_file_div').on('dragleave', function() {
 });
 
 // ドロップされた場合
-$('#select_file_div').on('drop', function(e) {
+$('#select_file_div').on('drop', function() {
     // クラスを削除
     $(this).removeClass('dragover');
-    // ドロップされたファイル情報を取得
-    var files = e.originalEvent.dataTransfer.files;
-    // 拡張子が許可されたものであるか確認
-    File_Extension_Check(files[0].name);
 });
 
 // 拡張子が許可されたものであるか確認
@@ -38,9 +34,10 @@ function File_Extension_Check(file_name){
     if(allowedExtensions.indexOf(fileExtension) === -1){
         // ファイル選択をクリアする
         $('#select_file_name').empty();
-        $('#select_file').val(''); 
+        $('#select_file').val('');
+        alert('拡張子が正しくありません。');
     }else{
         // 選択したファイル名を要素に出力
-        $('#select_file_name').html(file_name);
+        $('#select_file_name').html('選択ファイル：' + file_name);
     }
 };

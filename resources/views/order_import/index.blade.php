@@ -9,13 +9,11 @@
         <form method="POST" action="{{ route('order_import.import') }}" id="order_import_form" enctype="multipart/form-data">
             @csrf
             <p class="border-l-4 border-theme-main pl-2 mb-2">受注データ選択</p>
-            <div id="select_file_div" class="bg-white border border-dashed border-gray-500 relative mb-2">
+            <div id="select_file_div" class="bg-white border border-dashed border-gray-500 relative mb-2 py-2">
                 <input type="file" id="select_file" name="order_data" class="cursor-pointer block absolute inset-0 w-full h-full opacity-0 z-50">
-                <div class="text-sm text-center py-5">
-                    ここにファイルをドロップ or 選択して下さい
-                </div>
+                <p class="text-sm text-center py-5">ここにファイルをドロップ or 選択して下さい</p>
+                <p id="select_file_name" class="text-sm text-center underline"></p>
             </div>
-            <p id="select_file_name" class="text-sm mb-3"></p>
             <div class="">
                 <p class="border-l-4 border-theme-main pl-2 mb-2">受注インポート設定選択</p>
                 <table class="text-xs whitespace-nowrap">
