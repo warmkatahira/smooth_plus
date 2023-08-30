@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('tracking_no')->nullable();
             $table->date('shipping_date')->nullable();
             $table->unsignedInteger('shop_id');
-            $table->string('order_no', 50);
+            $table->string('order_no', 50)->unique();
             $table->date('order_date')->nullable();
             $table->time('order_time')->nullable();
             $table->string('buyer_name', 50)->nullable();

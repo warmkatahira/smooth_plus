@@ -29,7 +29,7 @@ Route::middleware(['auth'])->group(function () {
         Route::controller(OrderImportController::class)->prefix('order_import')->name('order_import.')->group(function(){
             Route::get('', 'index')->name('index');
             Route::post('', 'import')->name('import');
-            Route::get('error_download', 'error_download')->name('error_download');
+            Route::get('import_error_download', 'import_error_download')->name('import_error_download');
         });
     // ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆ 受注管理 ★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
         // -+-+-+-+-+-+-+-+-+-+-+-+ 受注管理 -+-+-+-+-+-+-+-+-+-+-+-+

@@ -1,1 +1,0 @@
-$(".select_file input[type=file]").on("change",function(){let e=$(this).closest(".select_file");e.find(".select_file_name").html(""),$.each($(this).prop("files"),function(i,n){e.find(".select_file_name").append(n.name+"<br>")})});

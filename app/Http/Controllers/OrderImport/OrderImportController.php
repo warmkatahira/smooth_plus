@@ -11,6 +11,7 @@ use App\Models\OrderImport;
 use App\Http\Requests\OrderImport\OrderImportRequest;
 // サービス
 use App\Services\OrderImport\OrderImportService;
+use App\Services\OrderImport\ErrorDownloadService;
 // その他
 use Carbon\CarbonImmutable;
 use Rap2hpoutre\FastExcel\FastExcel;
@@ -18,30 +19,27 @@ use Illuminate\Support\Facades\DB;
 
 class OrderImportController extends Controller
 {
+    // 受注インポート画面表示
     public function index()
     {
         // 受注インポート設定を全て取得
         $order_import_settings = OrderImportSetting::getAll()->get();
-
-
-        $order_imports = OrderImport::all();
-
         return view('order_import.index')->with([
             'order_import_settings' => $order_import_settings,
-            'order_imports' => $order_imports,
         ]);
     }
 
+    // 受注データインポート
     public function import(OrderImportRequest $request)
     {
         // セッションを削除
         session()->forget(['order_import_error']);
+        // インスタンス化
+        $OrderImportService = new OrderImportService;
         try {
-            $result = DB::transaction(function () use ($request) {
+            $order_no_num = DB::transaction(function () use ($request, $OrderImportService) {
                 // 現在の日時を取得
                 $nowDate = CarbonImmutable::now();
-                // インスタンス化
-                $OrderImportService = new OrderImportService;
                 // 受注インポート設定を取得
                 $order_import_setting = OrderImportSetting::getSpecify($request->order_import_setting_id)->first();
                 // 受注データをストレージに保存し、フルパスを取得
@@ -62,10 +60,17 @@ class OrderImportController extends Controller
                 }
                 // order_importsテーブルへ追加
                 $OrderImportService->insertTableOrderData($result['insert_data']);
-                // 
-                $OrderImportService->updateOrderUnit($nowDate);
+                // インポート済みの受注があれば削除する
+                $order_no_num = $OrderImportService->deleteImportedOrderData($nowDate);
+                // 処理後の受注番号数が0であればインポートできる受注がないので、エラー情報を出力
+                if($order_no_num['after_order_no_num'] == 0){
+                    throw new \Exception("インポートできる受注がありませんでした。");
+                }
+                // 受注データ毎の処理
+                $OrderImportService->procByOrder($nowDate);
                 // ordersとorder_detailsテーブルに追加
                 $OrderImportService->insertOrderTable();
+                return $order_no_num;
             });
         } catch (\Exception $e) {
             return redirect()->back()->with([
@@ -73,15 +78,28 @@ class OrderImportController extends Controller
                 'alert_message' => $e->getMessage(),
             ]);
         }
+        // 受注マクロ適用処理
+
+        // 引当処理
+        
+        // 処理完了後に表示するメッセージを作成
+        $alert = $OrderImportService->createDispMessage($order_no_num);
         return redirect()->back()->with([
-            'alert_type' => 'success',
-            'alert_message' => '受注インポートが完了しました。',
+            'alert_type' => $alert['type'],
+            'alert_message' => $alert['message'],
         ]);
     }
 
-    public function error_download()
+    // 受注インポートエラーダウンロード
+    public function import_error_download()
     {
-        // エラー情報を出力
-        return (new FastExcel(session('order_import_error')[0]['エラー情報']))->download('受注データインポートエラー_'.CarbonImmutable::now()->isoFormat('Y年MM月DD日HH時mm分ss秒').'.csv');
+        // インスタンス化
+        $ErrorDownloadService = new ErrorDownloadService;
+        // ダウンロードする情報を取得
+        $response = $ErrorDownloadService->getDownloadItem();
+        // ダウンロード処理
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename=受注インポートエラー_' . CarbonImmutable::now()->isoFormat('Y年MM月DD日HH時mm分ss秒') . '.csv');
+        return $response;
     }
 }

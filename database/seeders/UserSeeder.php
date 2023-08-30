@@ -21,7 +21,6 @@ class UserSeeder extends Seeder
             'password' => bcrypt('katahira134'),
             'role_id' => 1,
             'status' => 1,
-            'chatwork_account_id' => '3281641',
         ]);
     }
 }

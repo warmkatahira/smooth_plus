@@ -14,7 +14,7 @@
         <link rel="shortcut icon" href="{{ asset('image/favicon.svg') }}">
 
         <!-- Styles -->
-        @vite(['resources/css/app.css', 'resources/scss/theme.scss'])
+        @vite(['resources/css/app.css', 'resources/scss/theme.scss', 'resources/scss/file_select.scss'])
 
         <!-- Scripts -->
         @vite(['resources/js/app.js', 'resources/js/file_select.js'])

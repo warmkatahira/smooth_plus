@@ -18,6 +18,7 @@ export default defineConfig({
                 'resources/js/loading.js',
                 'resources/css/loading.css',
                 'resources/js/file_select.js',
+                'resources/scss/file_select.scss',
                 'resources/js/checkbox.js',
             ],
             // ウェルカム

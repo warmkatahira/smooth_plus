@@ -54,7 +54,7 @@ class OrderImportService
         return;
     }
 
-    // 
+    // 追加する受注データを配列に格納（同時にバリデーションも実施）
     public function setArrayOrderData($order_import_setting, $path, $nowDate)
     {
         // 受注データの情報を取得
@@ -132,6 +132,7 @@ class OrderImportService
         return compact('insert_data', 'validation_error');
     }
 
+    // バリデーション処理
     public function validationOrderData($param, $line_no)
     {
         // バリデーションルールを定義
@@ -216,6 +217,7 @@ class OrderImportService
         return empty($message) ? null : array($line_no.'行目', $message);
     }
 
+    // order_importsテーブルへ追加
     public function insertTableOrderData($order)
     {
         // テーブルをロック
@@ -227,11 +229,39 @@ class OrderImportService
         return;
     }
 
-    public function updateOrderUnit($nowDate)
+    // インポート済みの受注があれば削除する
+    public function deleteImportedOrderData($nowDate)
     {
-        // 受注管理IDの先頭9桁(先頭固定のSを含む)に使用する文字列をランダムで生成し、既に使用されていないか確認する
-        // 未使用の文字列になるまでループ処理
+        // 削除処理前の受注番号数を取得
+        $before_order_no_num = OrderImport::groupBy('order_no')->get(['order_no'])->count();
+        // ordersテーブルとorder_importsテーブルを受注番号で結合
+        $orders = Order::join('order_imports', 'order_imports.order_no', 'orders.order_no')
+                        ->groupBy('order_imports.order_no')
+                        ->get(['order_imports.order_no']);
+        // 件数が0より多ければ既に取り込まれている受注が含まれているので、情報をセッションに格納
+        if($orders->count() > 0){
+            // エラー出力する情報を取得
+            $errors = OrderImport::whereIn('order_no', $orders)
+                        ->groupBy('order_no', 'ship_name')
+                        ->get(['order_no', 'ship_name']);
+            session(['order_import_error' => array(['エラー情報' => $errors, 'インポート日時' => $nowDate])]);
+        }
+        // 既に取り込まれている受注をorder_importsテーブルから削除
+        OrderImport::whereIn('order_no', $orders)->delete();
+        // 削除処理後の受注番号数を取得
+        $after_order_no_num = OrderImport::groupBy('order_no')->get(['order_no'])->count();
+        // 削除された受注番号数を取得(削除前 - 削除後)
+        $delete_order_no_num = $before_order_no_num - $after_order_no_num;
+        return compact('before_order_no_num', 'after_order_no_num', 'delete_order_no_num');
+    }
+
+    // 受注データ毎の処理
+    public function procByOrder($nowDate)
+    {
+        // 受注管理IDの先頭9桁(先頭固定のSを含む)に使用する文字列をランダムで生成する。同時に既に使用されていないか確認する
+        // 未使用の文字列であるかの判断で使用する変数をセット
         $check = false;
+        // 未使用の文字列になるまでループ処理
         while($check == false){
             // 文字列を生成
             $order_control_id_head = 'S'.Str::random(8);
@@ -248,8 +278,8 @@ class OrderImportService
         $count = 0;
         // 受注番号分だけループ
         foreach($order_no_uniques as $order_no_unique){
-            // インポートした受注の中で、受注ステータスを「確認待ち」に変更する条件のものがあるか
-            $order_status_id = $this->updateOrderStatusIdForKAKUNIN_MACHI($order_no_unique->order_no);
+            // 受注ステータスを「確認待ち」に変更する条件のものがあるか確認
+            $order_status_id = $this->updateOrderStatusForKAKUNIN_MACHI($order_no_unique->order_no);
             // 受注管理IDを採番
             $count++;
             $order_control_id = $order_control_id_head . sprintf('%04d', $count);
@@ -262,24 +292,27 @@ class OrderImportService
         return;
     }
 
-    // インポートした受注の中で、受注ステータスを「確認待ち」に変更する条件のものがあるか
-    public function updateOrderStatusIdForKAKUNIN_MACHI($order_no)
+    // 受注ステータスを「確認待ち」に変更する条件のものがあるか確認
+    public function updateOrderStatusForKAKUNIN_MACHI($order_no)
     {
         // 受注データを取得
         $order = OrderImport::where('order_no', $order_no)->first();
+        // 受注ステータスを格納する変数をセット（初期値は「引当待ち」にする）
+        $order_status_id = OrderStatusEnum::HIKIATE_MACHI;
         // 以下の条件に該当すれば、受注ステータスを「確認待ち」に変更
         // 条件1:配送先住所から都道府県が取得できていない
         preg_match_all('/東京都|北海道|(?:京都|大阪)府|.{6,9}県/', $order->ship_address, $maches);
-        if (!isset($maches[0][0])) {
+        if(!isset($maches[0][0])){
             $order_status_id = OrderStatusEnum::KAKUNIN_MACHI;
         }
         // 条件2:購入者メモがNot Nullである
-        if (!is_null($order->buyer_memo)) {
+        if(!is_null($order->buyer_memo)){
             $order_status_id = OrderStatusEnum::KAKUNIN_MACHI;
         }
-        return isset($order_status_id) ? $order_status_id : OrderStatusEnum::HIKIATE_MACHI;
+        return $order_status_id;
     }
 
+    // ordersとorder_detailsテーブルに追加
     public function insertOrderTable()
     {
         // ordersテーブルに追加する情報を取得
@@ -293,5 +326,20 @@ class OrderImportService
         // order_detailsテーブルに追加
         OrderDetail::upsert($insert_order_detail, 'order_detail_id');
         return;
+    }
+
+    // 処理完了後に表示するメッセージを作成
+    public function createDispMessage($order_no_num)
+    {
+        // 固定のメッセージをセット
+        $message = $order_no_num['before_order_no_num'].'件中'.$order_no_num['after_order_no_num'].'件の受注データをインポートしました。';
+        // 削除された件数があれば、メッセージを追加
+        if($order_no_num['delete_order_no_num'] > 0){
+            $message .= '（インポート不可：'.$order_no_num['delete_order_no_num'].'件）';
+        }
+        return with([
+            'type' => $order_no_num['delete_order_no_num'] > 0 ? 'warning' : 'success',
+            'message' => $message,
+        ]);
     }
 }
