@@ -12,10 +12,10 @@
                     <th class="font-thin py-1 px-2">受注管理ID</th>
                     <th class="font-thin py-1 px-2">確認</th>
                     <th class="font-thin py-1 px-2">引当</th>
-                    <th class="font-thin py-1 px-2">受注日</th>
-                    <th class="font-thin py-1 px-2">受注時間</th>
                     <th class="font-thin py-1 px-2">モール</th>
                     <th class="font-thin py-1 px-2">ショップ</th>
+                    <th class="font-thin py-1 px-2">受注日</th>
+                    <th class="font-thin py-1 px-2">受注時間</th>
                     <th class="font-thin py-1 px-2">受注番号</th>
                     <th class="font-thin py-1 px-2">配送先名</th>
                     <th class="font-thin py-1 px-2">運送会社</th>
@@ -37,12 +37,12 @@
                         <td class="py-1 px-2 border">{{ $order->order_control_id }}</td>
                         <td class="py-1 px-2 border text-center">@if($order->is_confirmed == 1) <lord-icon src="https://cdn.lordicon.com/egiwmiit.json" style="width:20px;height:20px"></lord-icon> @endif</td>
                         <td class="py-1 px-2 border text-center">@if($order->is_allocated == 1) <lord-icon src="https://cdn.lordicon.com/egiwmiit.json" style="width:20px;height:20px"></lord-icon> @endif</td>
-                        <td class="py-1 px-2 border">{{ \Carbon\CarbonImmutable::parse($order->order_date)->isoFormat('Y年MM月DD日') }}</td>
-                        <td class="py-1 px-2 border">{{ \Carbon\CarbonImmutable::parse($order->order_time)->isoFormat('HH時mm分ss秒') }}</td>
                         <td class="border">
                             <img src="{{ asset($order->shop->mall->mall_image_path) }}" class="inline-block">
                         </td>
                         <td class="py-1 px-2 border">{{ $order->shop_id }}</td>
+                        <td class="py-1 px-2 border">{{ \Carbon\CarbonImmutable::parse($order->order_date)->isoFormat('Y年MM月DD日') }}</td>
+                        <td class="py-1 px-2 border">{{ \Carbon\CarbonImmutable::parse($order->order_time)->isoFormat('HH時mm分ss秒') }}</td>
                         <td class="py-1 px-2 border">{{ $order->order_no }}</td>
                         <td class="py-1 px-2 border">{{ $order->ship_name }}</td>
                         <td class="border">
