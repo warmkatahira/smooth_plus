@@ -182,7 +182,8 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'Example' => App\Facades\Example::class,
+        'OrderCountByOrderStatusFunc' => App\Lib\OrderCountByOrderStatusFunc::class,
+        'OrderStatusEnum' => App\Enums\OrderStatusEnum::class,
     ])->toArray(),
 
 ];

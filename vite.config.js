@@ -29,9 +29,9 @@ export default defineConfig({
             [
                 'resources/js/order_import/order_import.js',
             ],
-            // 受注管理
+            // 受注画面共通
             [
-                'resources/scss/order_mgt.scss',
+                'resources/scss/order_list.scss',
             ],
         ),
     ],

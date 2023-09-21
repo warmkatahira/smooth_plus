@@ -278,12 +278,12 @@ class OrderImportService
         $count = 0;
         // 受注番号分だけループ
         foreach($order_no_uniques as $order_no_unique){
-            // 受注ステータスを「確認待ち」に変更する条件のものがあるか確認
+            // ステータスを「確認待ち」に変更する条件のものがあるか確認
             $order_status_id = $this->updateOrderStatusForKAKUNIN_MACHI($order_no_unique->order_no);
             // 受注管理IDを採番
             $count++;
             $order_control_id = $order_control_id_head . sprintf('%04d', $count);
-            // 受注管理ID・受注ステータスIDを更新
+            // 受注管理ID・ステータスIDを更新
             OrderImport::where('order_no', $order_no_unique->order_no)->update([
                 'order_control_id' => $order_control_id,
                 'order_status_id' => $order_status_id,
@@ -292,14 +292,14 @@ class OrderImportService
         return;
     }
 
-    // 受注ステータスを「確認待ち」に変更する条件のものがあるか確認
+    // ステータスを「確認待ち」に変更する条件のものがあるか確認
     public function updateOrderStatusForKAKUNIN_MACHI($order_no)
     {
         // 受注データを取得
         $order = OrderImport::where('order_no', $order_no)->first();
-        // 受注ステータスを格納する変数をセット（初期値は「引当待ち」にする）
+        // ステータスを格納する変数をセット（初期値は「引当待ち」にする）
         $order_status_id = OrderStatusEnum::HIKIATE_MACHI;
-        // 以下の条件に該当すれば、受注ステータスを「確認待ち」に変更
+        // 以下の条件に該当すれば、ステータスを「確認待ち」に変更
         // 条件1:配送先住所から都道府県が取得できていない
         preg_match_all('/東京都|北海道|(?:京都|大阪)府|.{6,9}県/', $order->ship_address, $maches);
         if(!isset($maches[0][0])){
